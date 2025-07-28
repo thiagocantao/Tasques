@@ -1,0 +1,131 @@
+﻿using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using DevExpress.Web;
+
+public partial class _Projetos_frameProjeto_MenuEsquerdo : System.Web.UI.Page
+{
+    dados cDados;
+
+    protected void Page_Init(object sender, EventArgs e)
+    {
+        DevExpress.Web.ASPxWebControl.SetIECompatibilityModeEdge();
+        System.Collections.Specialized.OrderedDictionary listaParametrosDados = new System.Collections.Specialized.OrderedDictionary();
+
+        listaParametrosDados["RemoteIPUsuario"] = Session["RemoteIPUsuario"] + "";
+        listaParametrosDados["NomeUsuario"] = Session["NomeUsuario"] + "";
+
+        cDados = CdadosUtil.GetCdados(listaParametrosDados);
+        if (!IsPostBack)
+            cDados.aplicaEstiloVisual(Page);
+
+        criarOpcoesMenuLateral();
+    }
+
+    private void criarOpcoesMenuLateral()
+    {
+        int codigoModeloFormulario;
+        // Opção Principal
+        NavBarItem itemPrincipal = new NavBarItem("Principal", "principal", "", "~/_Projetos/frameProjeto_Resumo.aspx", "framePrincipal");
+        
+        // Opção Riscos
+        codigoModeloFormulario = getCodigoModeloFormulario("RISC");
+        NavBarItem itemRiscos = new NavBarItem("Riscos", "Riscos", "", "~/_Projetos/renderizaFormulario.aspx?CMF=" + codigoModeloFormulario, "framePrincipal");
+
+        // Opção Issues
+        codigoModeloFormulario = getCodigoModeloFormulario("ISSU");
+        NavBarItem itemIssues = new NavBarItem("Issues", "Issues", "", "~/_Projetos/renderizaFormulario.aspx?CMF=" + codigoModeloFormulario, "framePrincipal");
+
+        // Opção Contratos
+        codigoModeloFormulario = getCodigoModeloFormulario("CONT");
+        NavBarItem itemContratos = new NavBarItem("Contratos", "Contratos", "", "~/_Projetos/renderizaFormulario.aspx?CMF=" + codigoModeloFormulario, "framePrincipal");
+
+        // Opção Reuniões
+        codigoModeloFormulario = getCodigoModeloFormulario("REUN");
+        NavBarItem itemReunioes = new NavBarItem("Reuniões", "Reunioes", "", "~/_Projetos/renderizaFormulario.aspx?CMF=" + codigoModeloFormulario, "framePrincipal");
+
+        // Opção Anexos
+        NavBarItem itemAnexos = new NavBarItem("Anexos", "Anexos", "", "", "framePrincipal");
+
+        // Opção ToDoList
+        NavBarItem itemToDoList = new NavBarItem("To Do List", "ToDoList", "", "", "framePrincipal");
+
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemPrincipal);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemRiscos);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemIssues);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemContratos);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemReunioes);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemAnexos);
+        navBarLateral.Groups.FindByName("Projetos").Items.Add(itemToDoList);
+
+        populaItensFormulario();
+
+        populaItensProcesso();
+
+    }
+
+    private bool populaItensFormulario()
+    {
+        string comandoSQL = string.Format(
+            @"SELECT MF.CodigoModeloFormulario, MF.NomeFormulario, MFTP.PreenchimentoObrigatorio
+                FROM ModeloFormularioTipoProjeto MFTP inner join
+                     ModeloFormulario MF ON (MFTP.codigoModeloFormulario = MF.codigoModeloFormulario)
+               WHERE CodigoTipoProjeto IN (SELECT tp.CodigoTipoProjeto FROM TipoProjeto tp WHERE tp.IndicaTipoProjeto = 'PRJ')
+                 AND IndicaModeloPublicado = 'S'
+                 AND IndicaControladoSistema = 'N'
+                 AND MF.DataExclusao is null
+               ORDER BY MF.NomeFormulario "
+            );
+
+        DataTable dt = cDados.getDataSet(comandoSQL).Tables[0];
+        foreach (DataRow dr in dt.Rows)
+        {
+            NavBarItem item = new NavBarItem(dr["NomeFormulario"].ToString(), "ID_" + dr["CodigoModeloFormulario"], "", "~/projeto_formularios.aspx?" + "&CMF=" + dr["CodigoModeloFormulario"] + "&NF=" + dr["NomeFormulario"], "framePrincipal");
+            navBarLateral.Groups.FindByName("Formularios").Items.Add(item);
+        }
+        return dt.Rows.Count > 0;
+    }
+
+    private bool populaItensProcesso()
+    {
+        string comandoSQL = string.Format(
+            @"SELECT W.CodigoWorkflow, CAST(NULL AS VARCHAR(50) ) AS NomeWorkflow
+                FROM WorkflowTipoProjeto WTP inner join
+                     Workflows W ON (WTP.CodigoWorkflow = W.CodigoWorkflow)
+               WHERE WTP.CodigoTipoProjeto IN (SELECT tp.CodigoTipoProjeto FROM TipoProjeto tp WHERE tp.IndicaTipoProjeto = 'PRJ')
+               ORDER BY 2 "
+            );
+
+        DataTable dt = cDados.getDataSet(comandoSQL).Tables[0];
+        foreach (DataRow dr in dt.Rows)
+        {
+            NavBarItem item = new NavBarItem(dr["NomeWorkflow"].ToString(), "ID_" + dr["CodigoWorkflow"], "", "~/projeto_WorkFlows.aspx?CW=" + dr["CodigoWorkflow"] + "&NW=" + dr["NomeWorkflow"], "framePrincipal");
+            navBarLateral.Groups.FindByName("Processos").Items.Add(item);
+        }
+        return dt.Rows.Count > 0;
+    }
+
+    private int getCodigoModeloFormulario(string iniciaisModeloFormulario)
+    {
+        int codigoModeloFormulario = 0;
+        // busca o modelo do formulário de propostas
+        string comandoSQL = string.Format("Select codigoModeloFormulario from modeloFormulario where IniciaisFormularioControladoSistema = '{0}'", iniciaisModeloFormulario);
+        DataSet ds = cDados.getDataSet(comandoSQL);
+        if (cDados.DataSetOk(ds))
+        {
+            DataTable dt = ds.Tables[0];
+            if (cDados.DataTableOk(dt))
+            {
+                codigoModeloFormulario = int.Parse(dt.Rows[0]["codigoModeloFormulario"].ToString());
+            }
+        }
+        return codigoModeloFormulario;
+    }
+}

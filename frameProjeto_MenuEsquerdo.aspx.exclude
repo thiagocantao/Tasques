@@ -1,0 +1,38 @@
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="frameProjeto_MenuEsquerdo.aspx.cs" Inherits="_Projetos_frameProjeto_MenuEsquerdo" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <script type="text/javascript" language="javascript" src="../scripts/CDIS.js"></script>
+    <title>Menu Propostas</title>
+</head>
+<body style="margin-left: 0px; margin-top:0px">
+    <form id="form1" runat="server">
+        <div style="padding-top:5px;padding-left:5px;">
+            <dxnb:ASPxNavBar ID="navBarLateral" runat="server"
+                GroupSpacing="0px" Width="166px" >
+                <CollapseImage Height="16px" Width="16px">
+                </CollapseImage>
+                <GroupContentStyle>
+                    <Paddings PaddingBottom="2px" PaddingLeft="1px" PaddingRight="1px" PaddingTop="2px" />
+                </GroupContentStyle>
+                <Groups>
+                    <dxnb:NavBarGroup Name="Projetos" Text="Projetos" Expanded="true">
+                    </dxnb:NavBarGroup>
+                    <dxnb:NavBarGroup Name="Formularios" Text="Formulários" Expanded="False">
+                    </dxnb:NavBarGroup>
+                    <dxnb:NavBarGroup Name="Processos" Text="Processos" Expanded="False">
+                    </dxnb:NavBarGroup>
+                </Groups>
+                <ExpandImage Height="16px" Width="16px"></ExpandImage>
+                <ClientSideEvents ItemClick="function(s, e) {
+	parent.mudaTituloSelecao(e.item.GetText());
+}" Init="function(s, e) {
+	parent.mudaTituloSelecao('Principal');
+}" />
+            </dxnb:ASPxNavBar>
+        </div>
+    </form>
+</body>
+</html>

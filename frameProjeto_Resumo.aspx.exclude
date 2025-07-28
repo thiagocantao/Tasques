@@ -1,0 +1,127 @@
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="frameProjeto_Resumo.aspx.cs" Inherits="_Projetos_frameProjeto_Resumo" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Resumo da proposta</title>
+    <script type="text/javascript" language="javascript" src="../scripts/CDIS.js"></script>
+
+
+</head>
+<body style="margin-left: 0px; margin-top: 0px">
+    <form id="form1" runat="server">
+        <div style="padding-top: 3px; padding-left: 0px;">
+            <table border="0" cellpadding="0" cellspacing="0" style="width: 840px">
+                <tr>
+                    <td>
+                        <dxe:ASPxLabel ID="lblTitulo" runat="server" Text="Título" Font-Bold="true"
+                           >
+                        </dxe:ASPxLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <dxe:ASPxTextBox ID="txtTitulo" runat="server" Width="95%" ClientInstanceName="txtTitulo"
+                            >
+                        </dxe:ASPxTextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height: 10px">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <dxe:ASPxLabel ID="lblDetalhes" runat="server" Text="Detalhes" Font-Bold="true"
+                           >
+                        </dxe:ASPxLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <dxe:ASPxMemo ID="txtDetalhes" runat="server" Rows="5" Width="95%"
+                           >
+                        </dxe:ASPxMemo>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height: 10px">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" style="width: 800px">
+                            <tr>
+                                <td>
+                                    <dxe:ASPxLabel ID="lblStatus" runat="server" Text="Status" Font-Bold="true"
+                                       >
+                                    </dxe:ASPxLabel>
+                                </td>
+                                <td>
+                                    <dxe:ASPxLabel ID="lblCategoria" runat="server" Text="Categoria" Font-Bold="true"
+                                        >
+                                    </dxe:ASPxLabel>
+                                </td>
+                                <td>
+                                    <dxe:ASPxLabel ID="lblGerente" runat="server" Text="Gerente" Font-Bold="true"
+                                       >
+                                    </dxe:ASPxLabel>
+                                </td>
+                                <td Width="195px">
+                                    <dxe:ASPxLabel ID="lblUnidade" runat="server" Text="Unidade" Font-Bold="true"
+                                       >
+                                    </dxe:ASPxLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <dxe:ASPxComboBox ID="cmbStatus" Width="185px" runat="server" >
+                                    </dxe:ASPxComboBox>
+                                </td>
+                                <td>
+                                    <dxe:ASPxComboBox ID="cmbCategoria" Width="185px" runat="server" >
+                                    </dxe:ASPxComboBox>
+                                </td>
+                                <td>
+                                    <dxe:ASPxComboBox ID="cmbGerente" Width="185px" runat="server" >
+                                    </dxe:ASPxComboBox>
+                                </td>
+                                <td>
+                                    <dxe:ASPxComboBox ID="cmbUnidade" Width="195px" runat="server" >
+                                    </dxe:ASPxComboBox>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height: 10px">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height: 13px">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table>
+                            <tr>
+                                <td style="width: 143px">
+                                    <dxe:ASPxButton ID="btnSalvar" runat="server" OnClick="btnSalvar_Click" Text="Salvar"
+                                        Width="133px">
+                                        <ClientSideEvents Click="function(s, e) {
+	e.processOnServer = validaCampos();
+}" />
+                                    </dxe:ASPxButton>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</body>
+</html>
