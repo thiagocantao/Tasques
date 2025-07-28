@@ -7,13 +7,42 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
     <title>Untitled Page</title>
-   
+    <script type="text/javascript" language="javascript" src="../../scripts/CDIS.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-     <script type="text/javascript" language="javascript"> 
+    <script type="text/javascript" src="../../scripts/AnyChart.js" language="javascript"></script>
+     <script type="text/javascript" language="javascript">
          function editaTarefa(s, e)
          {
-             s.UpdateTask(s.GetFocusedTaskKey(), { Duracao: "5" });             
+             s.UpdateTask(s.GetFocusedTaskKey(), { Duracao: "5" });
          }
+
+        function funcaoPosModalEdicao(retorno) {
+            var funcFechaModal = function () {
+                window.top.pcModal.GetContentIFrameWindow().parent.existeConteudoCampoAlterado = false;
+                window.top.cancelaFechamentoPopUp = 'N';
+                window.top.fechaModal();
+            };
+            var existeInformacoesPendentes = VerificaExistenciaInformacoesPendentes();
+            if (existeInformacoesPendentes) {
+                var textoMsg = traducao.Cronograma_gantt_existem_alteracoes_ainda_nao_salvas_ + "</br></br>" +
+                    traducao.Cronograma_gantt_ao_pressionar__ok___as_alteracoes_nao_salvas_serao_perdidas_ + "</br></br>" +
+                    traducao.Cronograma_gantt_deseja_continuar_;
+                window.top.mostraMensagem(textoMsg, 'confirmacao', true, true, funcFechaModal);
+                window.top.cancelaFechamentoPopUp = 'S';
+            }
+            else {
+                location.reload();
+            }
+        }
+
+        function VerificaExistenciaInformacoesPendentes() {
+            var frame = window.top.pcModal.GetContentIFrameWindow().parent;
+            return frame.existeConteudoCampoAlterado;
+        }
+
+        function funcaoPosModal(retorno) {
+            location.reload();
+        }
      </script>
     <style type="text/css">
 
