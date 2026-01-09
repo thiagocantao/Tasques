@@ -29,14 +29,29 @@
           class="grid-row"
         >
           <span class="grid-cell">{{ task.code }}</span>
-          <input v-model="task.name" class="grid-input" />
+          <div class="grid-name" :style="{ paddingLeft: `${task.level * 16}px` }">
+            <input v-model="task.name" class="grid-input" />
+          </div>
           <input v-model="task.owner" class="grid-input" />
           <input v-model="task.start" type="date" class="grid-input" />
           <input v-model="task.end" type="date" class="grid-input" />
           <input v-model.number="task.progress" type="number" min="0" max="100" class="grid-input" />
-          <button class="btn btn--ghost" type="button" @click="removeTask(task.id)">
-            Remover
-          </button>
+          <div class="grid-actions">
+            <button
+              class="btn btn--ghost"
+              type="button"
+              @click="outdentTask(task.id)"
+              :disabled="task.level === 0"
+            >
+              Recuar
+            </button>
+            <button class="btn btn--ghost" type="button" @click="indentTask(task.id)">
+              Avançar
+            </button>
+            <button class="btn btn--ghost" type="button" @click="removeTask(task.id)">
+              Remover
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -116,16 +131,34 @@ const props = defineProps({
   },
 });
 
-const tasks = ref(structuredClone(props.initialTasks));
+const tasks = ref(
+  structuredClone(props.initialTasks).map((task) => ({
+    ...task,
+    level: task.level ?? 0,
+    parentId: task.parentId ?? null,
+  })),
+);
 const zoomLevel = ref(1);
 
-const timeline = computed(() => {
-  const start = new Date("2024-09-01");
-  const end = new Date("2024-10-15");
-  const days = [];
-  const current = new Date(start);
+const parseDate = (value) => {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
 
-  while (current <= end) {
+const timeline = computed(() => {
+  const dates = tasks.value
+    .flatMap((task) => [parseDate(task.start), parseDate(task.end)])
+    .filter(Boolean);
+  const fallbackStart = new Date("2024-09-01");
+  const fallbackEnd = new Date("2024-10-15");
+  const minDate = dates.length ? new Date(Math.min(...dates.map((date) => date.getTime()))) : fallbackStart;
+  const maxDate = dates.length ? new Date(Math.max(...dates.map((date) => date.getTime()))) : fallbackEnd;
+  minDate.setDate(minDate.getDate() - 3);
+  maxDate.setDate(maxDate.getDate() + 3);
+  const days = [];
+  const current = new Date(minDate);
+
+  while (current <= maxDate) {
     const iso = current.toISOString().slice(0, 10);
     const day = current.getDate();
     const label = current.toLocaleDateString("pt-BR", { month: "short" });
@@ -148,11 +181,54 @@ const addTask = () => {
     start: timeline.value[0].iso,
     end: timeline.value[5].iso,
     progress: 0,
+    level: 0,
+    parentId: null,
   });
 };
 
 const removeTask = (id) => {
   tasks.value = tasks.value.filter((task) => task.id !== id);
+};
+
+const indentTask = (id) => {
+  const index = tasks.value.findIndex((task) => task.id === id);
+  if (index <= 0) {
+    return;
+  }
+
+  const previous = tasks.value[index - 1];
+  const current = tasks.value[index];
+  const nextLevel = Math.min(previous.level + 1, 6);
+
+  tasks.value[index] = {
+    ...current,
+    level: nextLevel,
+    parentId: previous.id,
+  };
+};
+
+const outdentTask = (id) => {
+  const index = tasks.value.findIndex((task) => task.id === id);
+  if (index < 0) {
+    return;
+  }
+
+  const current = tasks.value[index];
+  const nextLevel = Math.max(current.level - 1, 0);
+  const parentIndex = tasks.value
+    .slice(0, index)
+    .reverse()
+    .findIndex((task) => task.level === nextLevel - 1);
+  const parentTask =
+    nextLevel > 0 && parentIndex !== -1
+      ? tasks.value[index - parentIndex - 1]
+      : null;
+
+  tasks.value[index] = {
+    ...current,
+    level: nextLevel,
+    parentId: parentTask?.id ?? null,
+  };
 };
 
 const zoomIn = () => {
@@ -242,10 +318,10 @@ const barStyle = (task) => {
 .grid-header,
 .grid-row {
   display: grid;
-  grid-template-columns: 72px minmax(180px, 1.6fr) minmax(140px, 1fr) repeat(2, 140px) 70px 110px;
+  grid-template-columns: 72px 240px 170px 140px 140px 70px 220px;
   gap: 8px;
   align-items: center;
-  min-width: 750px;
+  min-width: 1050px;
 }
 
 .grid-header {
@@ -280,6 +356,20 @@ const barStyle = (task) => {
   font-size: 13px;
   width: 100%;
   background: #ffffff;
+  min-width: 0;
+}
+
+.grid-name {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.grid-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .gantt-editor__timeline-wrapper {
@@ -371,6 +461,11 @@ const barStyle = (task) => {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn--primary {
