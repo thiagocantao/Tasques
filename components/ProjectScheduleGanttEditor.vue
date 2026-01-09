@@ -40,74 +40,37 @@
         </div>
       </aside>
 
-      <main class="gantt-editor__timeline">
-        <div class="timeline-header" :style="{ gridTemplateColumns: timelineColumns }">
-          <div
-            v-for="day in timeline"
-            :key="day.iso"
-            class="timeline-header__cell"
-          >
-            <span class="timeline-header__day">{{ day.day }}</span>
-            <span class="timeline-header__label">{{ day.label }}</span>
-          </div>
-        </div>
-
-        <div class="timeline-body" :style="{ gridTemplateColumns: timelineColumns }">
-          <div
-            v-for="task in tasks"
-            :key="task.id"
-            class="timeline-row"
-          >
+      <div class="gantt-editor__timeline-wrapper">
+        <main class="gantt-editor__timeline">
+          <div class="timeline-header" :style="{ gridTemplateColumns: timelineColumns }">
             <div
-              class="timeline-row__bar"
-              :style="barStyle(task)"
+              v-for="day in timeline"
+              :key="day.iso"
+              class="timeline-header__cell"
             >
-              <span>{{ task.name }}</span>
-              <small>{{ task.progress }}%</small>
+              <span class="timeline-header__day">{{ day.day }}</span>
+              <span class="timeline-header__label">{{ day.label }}</span>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
 
-    <footer class="gantt-editor__footer">
-      <div class="gantt-editor__legend">
-        <span class="legend-item">
-          <span class="legend-dot legend-dot--today"></span>
-          Hoje
-        </span>
-        <span class="legend-item">
-          <span class="legend-dot legend-dot--baseline"></span>
-          Linha base
-        </span>
+          <div class="timeline-body" :style="{ gridTemplateColumns: timelineColumns }">
+            <div
+              v-for="task in tasks"
+              :key="task.id"
+              class="timeline-row"
+            >
+              <div
+                class="timeline-row__bar"
+                :style="barStyle(task)"
+              >
+                <span>{{ task.name }}</span>
+                <small>{{ task.progress }}%</small>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
-      <div class="gantt-editor__dependencies">
-        <h2>Dependências</h2>
-        <div
-          v-for="dependency in dependencies"
-          :key="dependency.id"
-          class="dependency-row"
-        >
-          <select v-model="dependency.from" class="grid-input">
-            <option v-for="task in tasks" :key="task.id" :value="task.id">
-              {{ task.code }} - {{ task.name }}
-            </option>
-          </select>
-          <span class="dependency-arrow">→</span>
-          <select v-model="dependency.to" class="grid-input">
-            <option v-for="task in tasks" :key="task.id" :value="task.id">
-              {{ task.code }} - {{ task.name }}
-            </option>
-          </select>
-          <button class="btn btn--ghost" type="button" @click="removeDependency(dependency.id)">
-            Excluir
-          </button>
-        </div>
-        <button class="btn btn--ghost" type="button" @click="addDependency">
-          Nova dependência
-        </button>
-      </div>
-    </footer>
+    </div>
   </section>
 </template>
 
@@ -154,11 +117,6 @@ const props = defineProps({
 });
 
 const tasks = ref(structuredClone(props.initialTasks));
-const dependencies = ref([
-  { id: 1, from: 1, to: 2 },
-  { id: 2, from: 2, to: 3 },
-]);
-
 const zoomLevel = ref(1);
 
 const timeline = computed(() => {
@@ -195,23 +153,6 @@ const addTask = () => {
 
 const removeTask = (id) => {
   tasks.value = tasks.value.filter((task) => task.id !== id);
-  dependencies.value = dependencies.value.filter(
-    (dependency) => dependency.from !== id && dependency.to !== id,
-  );
-};
-
-const addDependency = () => {
-  const nextId = Math.max(0, ...dependencies.value.map((dependency) => dependency.id)) + 1;
-  const [firstTask, secondTask] = tasks.value;
-  dependencies.value.push({
-    id: nextId,
-    from: firstTask?.id ?? 0,
-    to: secondTask?.id ?? 0,
-  });
-};
-
-const removeDependency = (id) => {
-  dependencies.value = dependencies.value.filter((dependency) => dependency.id !== id);
 };
 
 const zoomIn = () => {
@@ -301,9 +242,10 @@ const barStyle = (task) => {
 .grid-header,
 .grid-row {
   display: grid;
-  grid-template-columns: 60px 1.5fr 1fr 1fr 1fr 60px 110px;
+  grid-template-columns: 72px minmax(180px, 1.6fr) minmax(140px, 1fr) repeat(2, 140px) 70px 110px;
   gap: 8px;
   align-items: center;
+  min-width: 750px;
 }
 
 .grid-header {
@@ -340,6 +282,11 @@ const barStyle = (task) => {
   background: #ffffff;
 }
 
+.gantt-editor__timeline-wrapper {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
 .gantt-editor__timeline {
   display: flex;
   flex-direction: column;
@@ -347,6 +294,7 @@ const barStyle = (task) => {
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 10px 30px rgba(31, 43, 55, 0.08);
+  min-width: max-content;
 }
 
 .timeline-header {
@@ -415,67 +363,6 @@ const barStyle = (task) => {
   font-weight: 500;
 }
 
-.gantt-editor__footer {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 24px;
-}
-
-.gantt-editor__legend,
-.gantt-editor__dependencies {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: 0 10px 30px rgba(31, 43, 55, 0.08);
-}
-
-.gantt-editor__legend {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
-  color: #4b5b6b;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.legend-dot--today {
-  background: #2f80ed;
-}
-
-.legend-dot--baseline {
-  background: #7ed321;
-}
-
-.gantt-editor__dependencies h2 {
-  margin: 0 0 12px;
-  font-size: 16px;
-}
-
-.dependency-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.dependency-arrow {
-  font-size: 16px;
-  color: #6a7a8c;
-}
-
 .btn {
   border: none;
   border-radius: 10px;
@@ -507,10 +394,6 @@ const barStyle = (task) => {
 
 @media (max-width: 1200px) {
   .gantt-editor__workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .gantt-editor__footer {
     grid-template-columns: 1fr;
   }
 }
