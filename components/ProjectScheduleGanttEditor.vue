@@ -227,13 +227,11 @@ const barStyle = (task) => {
   const endIndex = timeline.value.findIndex((day) => day.iso === task.end);
   const safeStart = Math.max(startIndex, 0);
   const safeEnd = Math.max(endIndex, safeStart + 1);
-  const totalDays = timeline.value.length;
-  const left = (safeStart / totalDays) * 100;
-  const width = ((safeEnd - safeStart + 1) / totalDays) * 100;
+  const gridStart = safeStart + 1;
+  const gridEnd = safeEnd + 2;
 
   return {
-    left: `${left}%`,
-    width: `${width}%`,
+    gridColumn: `${gridStart} / ${gridEnd}`,
     background: `linear-gradient(90deg, #2f80ed ${task.progress}%, #dfe9f7 ${task.progress}%)`,
   };
 };
@@ -296,6 +294,8 @@ const barStyle = (task) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 520px;
+  overflow: auto;
 }
 
 .grid-header,
@@ -312,6 +312,11 @@ const barStyle = (task) => {
   color: #5a6b7b;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  padding: 8px 0;
+  z-index: 1;
 }
 
 .grid-row {
@@ -369,11 +374,16 @@ const barStyle = (task) => {
   display: grid;
   gap: 12px;
   position: relative;
+  grid-auto-rows: 44px;
 }
 
 .timeline-row {
+  grid-column: 1 / -1;
   position: relative;
-  height: 44px;
+  display: grid;
+  grid-template-columns: inherit;
+  align-items: center;
+  height: 100%;
   background: repeating-linear-gradient(
     90deg,
     #f2f5f9 0,
@@ -386,9 +396,9 @@ const barStyle = (task) => {
 }
 
 .timeline-row__bar {
-  position: absolute;
-  top: 7px;
-  bottom: 7px;
+  position: relative;
+  align-self: center;
+  height: calc(100% - 14px);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
